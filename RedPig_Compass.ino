@@ -6,6 +6,17 @@
 #include "Wire.h"
 #include "I2Cdev.h"
 #include "HMC5883L.h"
+#include "SevenSegmentTM1637.h"
+#include "SevenSegmentExtended.h"
+#include "SevenSegmentFun.h"
+const byte PIN_CLK = 12;   // define CLK pin (any digital pin)
+const byte PIN_DIO = 13;   // define DIO pin (any digital pin)
+SevenSegmentFun    display(PIN_CLK, PIN_DIO);
+#define encoder0PinA  2  //CLK Output A Do not use other pin for clock as we are using interrupt
+#define encoder0PinB  4  //DT Output B
+#define Switch 5 // Switch connection if available
+
+volatile unsigned int encoder0Pos = 0;
 
 HMC5883L compass;
 
@@ -16,9 +27,19 @@ const float declinacion = 0.12;
 
 void setup()
 {
-    Serial.begin(9600);
-    Wire.begin();
-    compass .initialize();
+  Serial.begin(9600);
+  Wire.begin();
+  compass .initialize();
+  display.begin();            // initializes the display
+  display.setBacklight(100);  // set the brightness to 100 %
+  pinMode(encoder0PinA, INPUT); 
+  digitalWrite(encoder0PinA, HIGH);       // turn on pullup resistor
+  pinMode(encoder0PinB, INPUT); 
+  digitalWrite(encoder0PinB, HIGH);       // turn on pullup resistor
+  attachInterrupt(0, doEncoder, RISING); // encoder pin on interrupt 0 - pin2
+  Serial.begin (9600);
+  Serial.println("start");                // a personal quirk
+  delay(1000);                // wait 1000 ms
 }
 
 void loop() {
@@ -34,8 +55,49 @@ void loop() {
     
     Serial.print("N:");
     Serial.println(angulo,0);  
-}
+    
+  // vertical level (e.g. audio volume)
+  introDuceNextDemo("AUDIO VOLUME DEMO");
+  audioVolume();
 
+  // bouncing ball
+  introDuceNextDemo("BOUNCING BALL DEMO");
+  unsigned int numMoves = 100; unsigned int timeDelay = 100;
+  display.bouncingBall(numMoves, timeDelay);
+
+  // scrolling text
+  introDuceNextDemo("SCROLLING TEXT DEMO");
+  byte repeats = 2;
+  display.scrollingText("ARDUINO TM1637 FUN", repeats);
+
+  // nightrider
+  introDuceNextDemo("REMEMBER KIT? NIGHTRIDER DEMO");
+  repeats = 4;
+  display.nightrider(repeats);
+
+  // snake
+  introDuceNextDemo("SNAKE DEMO");
+  display.snake(repeats);
+
+  // horizontal level (e.g equalizer)
+  introDuceNextDemo("EQUALIZER DEMO");
+  equalizer();
+
+  // bomb timer
+  introDuceNextDemo("GET READY FOR THE BOMB");
+  byte hours = 5; byte min = 16; unsigned int speed = 10000;
+  display.bombTimer(hours, min, speed, " RUN ");
+  delay(1000);;
+    Serial.print("Position:");
+  Serial.println (encoder0Pos, DEC);  //Angle = (360 / Encoder_Resolution) * encoder0Pos
+}
+void doEncoder() {
+  if (digitalRead(encoder0PinB)==HIGH) {
+    encoder0Pos++;
+  } else {
+    encoder0Pos--;
+  }
+}
 
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //                                                 EFIS_Remote_Module_Avionicsduino_V1.0
