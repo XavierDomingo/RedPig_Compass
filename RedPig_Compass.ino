@@ -12,9 +12,9 @@
 const byte PIN_CLK = 12;   // define CLK pin (any digital pin)
 const byte PIN_DIO = 13;   // define DIO pin (any digital pin)
 SevenSegmentFun    display(PIN_CLK, PIN_DIO);
-#define encoder0PinA  2  //CLK Output A Do not use other pin for clock as we are using interrupt
-#define encoder0PinB  4  //DT Output B
-#define Switch 5 // Switch connection if available
+#define encoder0PinA  2  //CLK Output A Do not use other pin for clock as we are using interrupt PONER SESISTENCIA 10K ENTRE ESTE Y vcc
+#define encoder0PinB  4  //DT Output B  PONER SESISTENCIA 10K ENTRE ESTE Y vcc
+#define Switch 5 // Switch connection if available  PONER SESISTENCIA 10K ENTRE ESTE Y vcc
 
 volatile unsigned int encoder0Pos = 0;
 
